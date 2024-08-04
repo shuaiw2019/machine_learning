@@ -30,9 +30,9 @@ class Op(object):
 
 
 # 加法算子
-class add(Op):
+class Add(Op):
     def __init__(self):
-        super(add, self).__init__()
+        super(Add, self).__init__()
 
     def __call__(self, x, y):
         return self.forward(x, y)
@@ -50,9 +50,9 @@ class add(Op):
 
 
 # 乘法算子
-class multiply(Op):
+class Multiply(Op):
     def __init__(self):
-        super(multiply, self).__init__()
+        super(Multiply, self).__init__()
 
     def __call__(self, x, y):
         return self.forward(x, y)
@@ -72,9 +72,10 @@ class multiply(Op):
 # 指数算子
 import math
 
-class exponential(Op):
+
+class Exponential(Op):
     def __init__(self):
-        super(exponential, self).__init__()
+        super(Exponential, self).__init__()
 
     def __call__(self, x):
         return self.forward(x)
@@ -92,7 +93,9 @@ class exponential(Op):
 # 向量线性乘法算子
 # 设置随机种子
 paddle.seed(10)
-class linear(Op):
+
+
+class Linear(Op):
     def __init__(self, input_size):
         """
         构造广义线性函数，生成模型参数
@@ -129,7 +132,7 @@ if __name__ == '__main__':
     input_size = 3
     N = 2
     X = paddle.randn(shape=[N, input_size],dtype='float32')
-    model = linear(input_size)
+    model = Linear(input_size)
     y_pred = model(X)
     print(X)
     print('y_pred:', y_pred,'\ny_pred type:', type(y_pred),'\ny_pred shape:',y_pred.shape)
@@ -229,29 +232,32 @@ def logistic(x):
     return 1 / (1 + paddle.exp(-x))
 
 
-if __name__ == '__main__':
-    x = paddle.linspace(-10, 10, 10000)
-    plt.figure()         # 创建新图像
-    plt.plot(x.tolist(), logistic(x).tolist(), color='r', label='logistic function')
-    ax = plt.gca()       # 获取当前坐标轴对象
-    ax.spines['top'].set_color('none')       # 取消上侧坐标轴
-    ax.spines['right'].set_color('none')     # 取消右侧坐标轴
-    ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
-    ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
-    ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
-    ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
-    plt.legend()    # 图例
-    plt.savefig('T3.1-Logistic函数.jpg')     # 保存图片
-    plt.show()      # 显示图像
+# if __name__ == '__main__':
+#     x = paddle.linspace(-10, 10, 10000)
+#     plt.figure()         # 创建新图像
+#     plt.plot(x.tolist(), logistic(x).tolist(), color='r', label='logistic function')
+#     ax = plt.gca()       # 获取当前坐标轴对象
+#     ax.spines['top'].set_color('none')       # 取消上侧坐标轴
+#     ax.spines['right'].set_color('none')     # 取消右侧坐标轴
+#     ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
+#     ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
+#     ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
+#     ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
+#     plt.legend()    # 图例
+#     plt.savefig('T3.1-Logistic函数.jpg')     # 保存图片
+#     plt.show()      # 显示图像
 
 
 # logistic回归算子
-class model_LR(Op):
+class ModelLR(Op):
     def __init__(self, input_dim):
-        super(model_LR, self).__init__()
+        super(ModelLR, self).__init__()
         self.params = {}
         self.params['w'] = paddle.zeros(shape=[input_dim, 1])
         self.params['b'] = paddle.zeros(shape=[1])
+        self.grads = {}
+        self.X = None
+        self.outputs = None
 
     def __call__(self, inputs):
         return self.forward(inputs)
@@ -262,8 +268,16 @@ class model_LR(Op):
         outputs: 预测标签为1的概率，shape=[N,1]
         """
         score = paddle.matmul(inputs, self.params['w']) + self.params['b']
-        outputs = logistic(score)
-        return outputs
+        self.outputs = logistic(score)
+        return self.outputs
+
+    def backward(self, labels):
+        """
+        labels: 真实标签，shape=[N,1]
+        """
+        N = labels.shape[0]
+        self.grads['w'] = -1 / N * paddle.matmul(self.X.t(), (labels - self.outputs))
+        self.grads['b'] = -1 / N * paddle.sum(labels - self.outputs)
 
 
 if __name__ == '__main__':
@@ -273,6 +287,102 @@ if __name__ == '__main__':
     inputs = paddle.randn(shape=[3, 4])
     print('Input is:', inputs)
     # 实例化模型
-    model = model_LR(4)
+    model = ModelLR(4)
     outputs = model(inputs)
     print('Output is:', outputs)
+
+
+# 损失函数
+# 交叉熵损失函数
+class BinaryCrossEntropyLoss(Op):
+    def __init__(self):
+        super(BinaryCrossEntropyLoss, self).__init__()
+        self.predicts = None
+        self.labels = None
+        self.num = None
+
+    def __call__(self, predicts, labels):
+        return self.forward(predicts, labels)
+
+    def forward(self, predicts, labels):
+        """
+        predicts: 预测值，shape=[N,1]
+        labels: 真实标签，shape=[N,1]
+        返回：损失值：shape=[1]
+        """
+        self.predicts = predicts
+        self.labels = labels
+        self.num = self.predicts.shape[0]
+        loss = -1. / self.num * (paddle.matmul(self.labels.t(), paddle.log(self.predicts))
+                                 + paddle.matmul((1 - self.labels.t()), paddle.log(1 - self.predicts)))
+        loss = paddle.squeeze(loss, axis=1)
+        return loss
+
+
+if __name__ == '__main__':
+    labels = paddle.ones(shape=[3, 1])
+    inputs = paddle.randn(shape=[3, 4])
+    model = ModelLR(4)
+    predicts = model(inputs)
+    bce_loss = BinaryCrossEntropyLoss()
+    print(bce_loss(predicts, labels))
+
+
+from abc import abstractmethod
+
+
+# 优化器基类
+class Optimizer(object):
+    def __init__(self, init_lr, model):
+        """
+        优化器类初始化
+        init_lr: 初始化学习率
+        model： 需要优化的模型
+        """
+        self.init_lr = init_lr
+        self.model = model
+
+    @abstractmethod
+    def step(self):
+        """
+        定义每次迭代如何更新参数
+        """
+        pass
+
+
+# 采用梯度下降法的优化器
+class SimpleBatchGD(Optimizer):
+    def __init__(self, init_lr, model):
+        super(SimpleBatchGD).__init__(init_lr=init_lr, model=model)
+
+    def step(self):
+        """
+        更新参数
+        """
+        # 遍历所有参数，并更新参数
+        if isinstance(self.model.params, dict):
+            for key in self.model.params.keys():
+                self.model.params[key] = self.model.params[key] - self.model.grads[key]
+
+
+# 准确率
+def accuracy(preds, labels):
+    """
+    输入：
+    -params: preds: 预测值，二分类：shape=[N,1]，多分类：shape=[N,C]
+    -params: labels: 真实标签，shape=[N,1]
+    输出：准确率，shape=[1]
+    """
+    # 判断是否为二分类
+    if preds.shape[1] == 1:
+        # 二分类时，判断每个概率值是否大于0.5，当大于0.5时类别为1，否则类别为0
+        preds = paddle.cast((preds >= 0.5), dtype='float32')
+    else:
+        preds = paddle.argmax(preds, axis=1, dtype='int32')
+    return paddle.mean(paddle.cast(paddle.equal(preds, labels), dtype='float32'))
+
+
+if __name__ == '__main__':
+    preds = paddle.to_tensor([[0.], [1.], [1.], [0.]])
+    labels = paddle.to_tensor([[1.], [1.], [0.], [0.]])
+    print('accuracy is:', accuracy(preds, labels))
