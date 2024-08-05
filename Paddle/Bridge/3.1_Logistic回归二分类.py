@@ -1,4 +1,6 @@
 from Bridge.dataset import *
+from Bridge.oprator import *
+from Bridge.bridger import *
 import matplotlib.pyplot as plt
 
 
@@ -28,5 +30,22 @@ y_train = y_train.reshape([-1, 1])
 y_dev = y_dev.reshape([-1, 1])
 y_test = y_test.reshape([-1, 1])
 
-print(y_train[:5])
+# print(y_train[:5])
 
+paddle.seed(102)
+
+# 模型训练
+# 超参数
+input_dim = 2    # 特征维度
+lr = 0.1         # 学习率
+# 实例化模型
+model = ModelLR(input_dim=input_dim)
+# 指定优化器
+optimizer = SimpleBatchGD(init_lr=lr, model=model)
+# 指定损失函数
+loss_fn = BinaryCrossEntropyLoss()
+# 指定评价方式
+metric = accuracy
+# 实例化bridger类，并传入训练配置
+bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
+bridger.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')

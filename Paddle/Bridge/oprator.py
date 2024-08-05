@@ -267,6 +267,8 @@ class ModelLR(Op):
         inputs: shape=[N,D],N是样本数量，D是特征数量
         outputs: 预测标签为1的概率，shape=[N,1]
         """
+        self.X = inputs
+        # 线性计算
         score = paddle.matmul(inputs, self.params['w']) + self.params['b']
         self.outputs = logistic(score)
         return self.outputs
@@ -353,7 +355,7 @@ class Optimizer(object):
 # 采用梯度下降法的优化器
 class SimpleBatchGD(Optimizer):
     def __init__(self, init_lr, model):
-        super(SimpleBatchGD).__init__(init_lr=init_lr, model=model)
+        super(SimpleBatchGD, self).__init__(init_lr=init_lr, model=model)
 
     def step(self):
         """
