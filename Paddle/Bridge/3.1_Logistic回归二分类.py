@@ -49,3 +49,10 @@ metric = accuracy
 # 实例化bridger类，并传入训练配置
 bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
 bridger.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')
+
+
+def plot(bridger):
+    plt.figure()
+    plt.subplot(1,2,1)
+    epochs = [i for i in range(len(bridger.train_scores))]
+    
