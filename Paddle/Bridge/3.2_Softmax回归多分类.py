@@ -23,3 +23,20 @@ X_test, y_test = X[-num_test:], y[-num_test:]
 print('X_train:', X_train.shape, 'y_train:', y_train.shape)
 print('X_dev:', X_dev.shape, 'y_dev:', y_dev.shape)
 print('X_test:', X_test, 'y_test:', y_test)
+
+
+# 定义Softmax函数
+def softmax(X):
+    """
+    Softmax函数
+    Args:
+        X: shape=[N,C],N为向量数量，C为向量维度
+    Returns: 函数计算结果
+    """
+    x_max = paddle.max(X, axis=1, keepdim=True)
+    x_exp = paddle.exp(X - x_max)
+    partition = paddle.sum(x_exp, axis=1, keepdim=True)
+    return x_exp / partition
+
+
+#
