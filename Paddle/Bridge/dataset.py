@@ -4,6 +4,9 @@
 
 # 生成用于线性回归的数据集
 import paddle
+import math
+import numpy as np
+
 
 def create_toy_data(func, interval, sample_num, noise = 0.0, add_outlier = False, outlier_ratio = 0.001):
     """
@@ -36,10 +39,6 @@ def create_toy_data(func, interval, sample_num, noise = 0.0, add_outlier = False
             outlier_idx = paddle.randint(0, len(y), shape=[outlier_num])
             y[outlier_idx] = y[outlier_idx] * 5
     return X, y
-
-
-import math
-import copy
 
 
 def make_moons(n_samples=1000, shuffle=True, noise=None):
@@ -79,8 +78,8 @@ def make_moons(n_samples=1000, shuffle=True, noise=None):
     print('after concat shape:', paddle.concat([outer_circ_x, inner_circ_x]).shape)
     print('X shape:', X.shape)
 
-    # 使用'paddle. zeros'将第一类数据的标签全部设置为0
-    # 使用'paddle. ones'将第一类数据的标签全部设置为1
+    # 使用'paddle.zeros'将第一类数据的标签全部设置为0
+    # 使用'paddle.ones'将第一类数据的标签全部设置为1
     y = paddle.concat(
         [paddle.zeros(shape=[n_samples_out]), paddle.ones(shape=[n_samples_in])]
     )
@@ -100,3 +99,65 @@ def make_moons(n_samples=1000, shuffle=True, noise=None):
         X += paddle.normal(mean=0.0, std=noise, shape=X.shape)
 
     return X, y
+
+
+# 多分类数据集
+def make_multiclass(n_samples=100, n_features=2, n_classes=3, shuffle=True, noise=0.1):
+    """
+    构件多分类数据集
+    Args:
+        n_samples: 数据量，int
+        n_features: 特征数量，int
+        n_classes: 类别数
+        shuffle: 是否打乱数据， bool
+        noise: 增加噪声的程度
+
+    Returns:
+        X: 特征数据，shape=[n_samples,n_features]
+        y: 标签数据，shape=[n_samples,1]
+    """
+    # 计算每个类别的样本数量
+    n_samples_per_class = [int(n_samples / n_classes) for k in range(n_classes)]
+    for i in range(n_samples - sum(n_samples_per_class)):
+        n_samples_per_class[i % n_classes] += 1
+    # 将特征和标签初始化为0
+    X = paddle.zeros([n_samples, n_features])
+    y = paddle.zeros([n_samples], dtype='int32')
+    # 随机生成3个簇中心作为类别中心
+    centroids = paddle.randperm(2 ** n_features)[:n_classes]
+    centroids_bin = np.unpackbits(centroids.numpy().astype('uint8')).reshape((-1, 8))[:, -n_features]
+    centroids = paddle.to_tensor(centroids_bin, dtype='float32')
+    # 控制簇中心的分离程度
+    centroids = 1.5 * centroids - 1
+    # 随机生成特征值
+    X[:, :n_features] = paddle.randn(shape=[n_samples, n_features])
+
+    stop = 0
+    # 将每个类的特征值控制在簇中心附近
+    for k, centroid in enumerate(centroids):
+        start, stop = stop, stop + n_samples_per_class[k]
+        # 指定标签值
+        y[start:stop] = k % n_classes
+        X_k = X[start:stop, :n_features]
+        # 控制每个类别特征值的分散程度
+        A = 2 * paddle.rand(shape=[n_features, n_features]) - 1
+        X_k[...] = paddle.matmul(X_k, A)
+        X_k += centroid
+        X[start:stop, :n_features] = X_k
+
+    # 如果noise不为None，则给特征加入噪声
+    if noise > 0.0:
+        # 生成noise掩膜，用来指定给哪些样本加入噪声
+        noise_mask = paddle.rand([n_samples]) < noise
+        for i in range(len(noise_mask)):
+            if noise_mask[i]:
+                # 给加噪声的样本随机赋予标签值
+                y[i] = paddle.randint(n_classes, shape=[1]).astype('int32')
+    # 如果shuffle为True，将所有数据打乱
+    if shuffle:
+        idx = paddle.randperm(X.shape[0])
+        X = X[idx]
+        y = y[idx]
+
+    return X, y
+

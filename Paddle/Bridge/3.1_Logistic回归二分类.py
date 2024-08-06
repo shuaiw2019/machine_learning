@@ -1,6 +1,9 @@
+import paddle
+
 from Bridge.dataset import *
 from Bridge.oprator import *
 from Bridge.bridger import *
+from Bridge.visul import *
 import matplotlib.pyplot as plt
 
 
@@ -50,9 +53,27 @@ metric = accuracy
 bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
 bridger.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')
 
+# 训练结果可视化
+# plot(bridger, fig_name='T3.1-二分类训练结果.jpg')
 
-def plot(bridger):
-    plt.figure()
-    plt.subplot(1,2,1)
-    epochs = [i for i in range(len(bridger.train_scores))]
-    
+# 模型评价
+score, loss = bridger.evaluate([X_test, y_test])
+print('[test] score/loss: {:.4f}/{:.4f}'.format(score, loss))
+
+
+# 可视化分类边界
+def decision_boundary(w, b, x1):
+    w1, w2 = w
+    x2 = (- w1 * x1 - b) / w2
+    return x2
+
+
+plt.figure(figsize=(5, 5))
+plt.scatter(X[:, 0].tolist(), X[:, 1].tolist(), marker='*', c=y.tolist())
+
+w = model.params['w']
+b = model.params['b']
+x1 = paddle.linspace(-2,3, 1000)
+x2 = decision_boundary(w, b, x1)
+plt.plot(x1.tolist(), x2.tolist(), color='r')
+plt.show()
