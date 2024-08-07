@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 
 
 # 可视化观察训练集与验证集的指标变化情况
-def plot(bridger, fig_name):
+def plot_class(bridger, fig_name):
     # 图像尺寸
     plt.figure(figsize=(10, 5))
     # 子图拆分,损失变化情况

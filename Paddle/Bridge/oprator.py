@@ -367,6 +367,7 @@ class SimpleBatchGD(Optimizer):
                 self.model.params[key] = self.model.params[key] - self.model.grads[key]
 
 
+# 评价指标
 # 准确率
 def accuracy(preds, labels):
     """
@@ -388,3 +389,113 @@ if __name__ == '__main__':
     preds = paddle.to_tensor([[0.], [1.], [1.], [0.]])
     labels = paddle.to_tensor([[1.], [1.], [0.], [0.]])
     print('accuracy is:', accuracy(preds, labels))
+
+
+# 定义Softmax函数
+def softmax(X):
+    """
+    Softmax函数
+    Args:
+        X: shape=[N,C],N为向量数量，C为向量维度
+    Returns: 函数计算结果
+    """
+    x_max = paddle.max(X, axis=1, keepdim=True)
+    x_exp = paddle.exp(X - x_max)
+    partition = paddle.sum(x_exp, axis=1, keepdim=True)
+    return x_exp / partition
+
+
+# 观察softmax的计算方式
+if __name__ == '__main__':
+    X = paddle.to_tensor([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]])
+    predict = softmax(X)
+    print(predict)
+
+
+# softmax回归算子
+class ModelSR(Op):
+    def __init__(self, input_dim, output_dim):
+        super(ModelSR, self).__init__()
+        self.params = {}
+        self.params['w'] = paddle.zeros(shape=[input_dim, output_dim])
+        self.params['b'] = paddle.zeros(shape=[output_dim])
+        self.grads = {}
+        self.X = None
+        self.outputs = None
+        self.output_dim = output_dim
+
+    def __call__(self, inputs):
+        return self.forward(inputs)
+
+    def forward(self, inputs):
+        """
+        softmax函数计算
+        Args:
+            inputs: shape=[N,D]，N是样本数量，D是特征维度
+        Returns:
+            outputs: 预测值，shape=[N,C],C是类别数
+        """
+        self.X = inputs
+        # 线性计算
+        score = paddle.matmul(self.X, self.params['w']) + self.params['b']
+        self.outputs = softmax(score)
+        return self.outputs
+
+    def backward(self, labels):
+        """
+        计算梯度
+        Args:
+            labels: 样本真实标签，shape=[N,C]
+        """
+        N = labels.shape[0]
+        # 转换为one-hot向量
+        labels = paddle.nn.functional.one_hot(labels, self.output_dim)
+        self.grads['w'] = - 1 / N * paddle.matmul(self.X.t(), (labels - self.outputs))
+        self.grads['b'] = - 1 / N * paddle.sum(labels - self.outputs)
+
+
+if __name__ == '__main__':
+    inputs = paddle.randn(shape=[1, 4])
+    print('input is:', inputs)
+    model = ModelSR(input_dim=4, output_dim=3)
+    outputs = model(inputs=inputs)
+    print('output is:', outputs)
+
+
+# 损失函数
+# 多分类交叉熵
+class MultiCrossEntroLoss(Op):
+    def __init__(self):
+        super(MultiCrossEntroLoss, self).__init__()
+        self.predicts = None
+        self.labels = None
+        self.num = None
+
+    def __call__(self, predicts, labels):
+        return self.forward(predicts, labels)
+
+    def forward(self, predicts, labels):
+        """
+        多分类交叉熵的前向计算
+        :param predicts: 预测值，shape=[N,1],N为样本数量
+        :param labels: 真实标签，shape=[N,1]
+        :return:平均损失值：shape=[1]
+        """
+        self.predicts = predicts
+        self.labels = labels
+        self.num = self.predicts.shape[0]
+        loss = 0
+        for i in range(0, self.num):
+            index = self.labels[i]
+            loss -= paddle.log(self.predicts[i][index])
+        return loss / self.num
+
+
+if __name__ == '__main__':
+    inputs = paddle.randn(shape=[1, 4])
+    model = ModelSR(input_dim=4, output_dim=3)
+    outputs = model(inputs=inputs)
+    labels = paddle.to_tensor([0])
+    mce_loss = MultiCrossEntroLoss()
+
+    print(mce_loss(outputs, labels).shape)

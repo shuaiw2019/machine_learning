@@ -1,8 +1,11 @@
 import paddle
 from matplotlib import pyplot as plt
 from Bridge.dataset import *
+from Bridge.oprator import *
+from Bridge.bridger import *
+from Bridge.visul import *
 
-paddle.seed(0)
+paddle.seed(62)
 n_samples = 1000
 X, y = make_multiclass(n_samples=n_samples, n_features=2, n_classes=3, noise=0.2)
 
@@ -25,18 +28,42 @@ print('X_dev:', X_dev.shape, 'y_dev:', y_dev.shape)
 print('X_test:', X_test, 'y_test:', y_test)
 
 
-# 定义Softmax函数
-def softmax(X):
-    """
-    Softmax函数
-    Args:
-        X: shape=[N,C],N为向量数量，C为向量维度
-    Returns: 函数计算结果
-    """
-    x_max = paddle.max(X, axis=1, keepdim=True)
-    x_exp = paddle.exp(X - x_max)
-    partition = paddle.sum(x_exp, axis=1, keepdim=True)
-    return x_exp / partition
+input_dim = 2     # 特征维度
+output_dim = 3    # 类别数
+lr = 0.1          # 学习率
+# 实例化模型
+model =ModelSR(input_dim=input_dim, output_dim=output_dim)
+# 指定优化器
+optimizer = SimpleBatchGD(init_lr=lr, model=model)
+# 指定损失函数
+loss_fn = MultiCrossEntroLoss()
+# 指定评价指标
+accuracy = accuracy
+# 实例化bridger类
+bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=accuracy)
+# 模型训练
+bridger.train([X_train, y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, eval_epochs=1, save_path='3.2_best.model')
+# 可视化训练结果
+# plot_class(bridger, fig_name='T3.2-多分类训练结果.jpg')
 
+# 模型评价
+score, loss = bridger.evaluate([X_test, y_test])
+print('[test] score / loss:{:.4f}/{:.4f}'.format(score, loss))
 
-#
+# 可视化分类边界
+# 均匀生成40,000个数据点
+x1, x2 = paddle.meshgrid(paddle.linspace(-3.5, 2, 200), paddle.linspace(-4.5, 3.5, 200))
+x = paddle.stack([paddle.flatten(x1), paddle.flatten(x2)], axis=1)
+# 预测对应类别
+y = bridger.predict(x)
+y = paddle.argmax(y, axis=1)
+# 绘制类别区域
+plt.ylabel('x2')
+plt.xlabel('x1')
+plt.scatter(x[:,0].tolist(), x[:,1].tolist(), c=y.tolist(), cmap=plt.cm.Spectral)
+
+paddle.seed(62)
+n_samples = 1000
+X, y = make_multiclass(n_samples=n_samples, n_features=2, n_classes=3, noise=0.2)
+plt.scatter(X[:, 0].tolist(), X[:, 1].tolist(), marker='*', c=y.tolist())
+plt.show()
