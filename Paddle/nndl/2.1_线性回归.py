@@ -1,8 +1,9 @@
-from Bridge.oprator import *
-from Bridge.dataset import *
 import paddle
 from matplotlib import pyplot as plt
-import numpy as np
+from nndl.dataset import *
+from nndl.cooker.metric import *
+from nndl.oprator import *
+from nndl.cooker.optimizer import *
 
 
 # 线性函数
@@ -35,7 +36,7 @@ plt.show()
 # 模型训练，100份数据
 input_size = 1
 reg_lambda = 0
-model = linear(input_size)
+model = Linear(input_size)
 
 model = optimizer_lsm(model, X_train.reshape([-1, 1]), y_train.reshape([-1, 1]), reg_lambda=reg_lambda)
 print('w_pred:', model.params['w'].item(), 'b_pred:', model.params['b'].item())

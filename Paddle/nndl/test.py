@@ -1,5 +1,5 @@
-from Bridge import oprator
-from Bridge import dataset
+from nndl import oprator
+from nndl import dataset
 import numpy as np
 import math
 import paddle

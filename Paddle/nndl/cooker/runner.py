@@ -3,7 +3,7 @@ import paddle
 import numpy as np
 
 
-class Bridger(object):
+class Runner(object):
     def __init__(self, model, optimizer, loss_fn, metric):
         self.model = model          # 模型
         self.optimizer = optimizer  # 优化器
@@ -18,7 +18,7 @@ class Bridger(object):
     def train(self, train_set, dev_set, **kwargs):
         num_epochs = kwargs.get('num_epochs', 0)       # 传入训练回合数，如果没有则默认为0
         log_epochs = kwargs.get('log_epochs', 100)     # 传入log打印频率，如果没有则默认为100
-        save_path = kwargs.get('save_path', 'best_model.pdparams')    # 传入模型保存路径
+        save_path = kwargs.get('save_path', '../Bridge/best_model.pdparams')    # 传入模型保存路径
         print_grads = kwargs.get('print_grads', None)     # 传入梯度打印函数，如果没有则默认为None
         best_score = 0        # 记录全局最优指标
         # 进行训练

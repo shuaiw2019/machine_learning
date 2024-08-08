@@ -330,42 +330,6 @@ if __name__ == '__main__':
     print(bce_loss(predicts, labels))
 
 
-from abc import abstractmethod
-
-
-# 优化器基类
-class Optimizer(object):
-    def __init__(self, init_lr, model):
-        """
-        优化器类初始化
-        init_lr: 初始化学习率
-        model： 需要优化的模型
-        """
-        self.init_lr = init_lr
-        self.model = model
-
-    @abstractmethod
-    def step(self):
-        """
-        定义每次迭代如何更新参数
-        """
-        pass
-
-
-# 采用梯度下降法的优化器
-class SimpleBatchGD(Optimizer):
-    def __init__(self, init_lr, model):
-        super(SimpleBatchGD, self).__init__(init_lr=init_lr, model=model)
-
-    def step(self):
-        """
-        更新参数
-        """
-        # 遍历所有参数，并更新参数
-        if isinstance(self.model.params, dict):
-            for key in self.model.params.keys():
-                self.model.params[key] = self.model.params[key] - self.model.grads[key]
-
 
 # 评价指标
 # 准确率

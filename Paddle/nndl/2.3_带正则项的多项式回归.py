@@ -1,8 +1,8 @@
 # 通过引入正则项来缓解高次多项式的过拟合
 import matplotlib.pyplot as plt
 import paddle
-from Bridge.oprator import *
-from Bridge.dataset import *
+from nndl.oprator import *
+from nndl.dataset import *
 
 import math
 
@@ -34,14 +34,14 @@ X_train_transformed = polynomial_basic_function(X_train.reshape([-1, 1]), degree
 X_test_transformed = polynomial_basic_function(X_test.reshape([-1, 1]), degree)
 X_underlying_transformed = polynomial_basic_function(X_underlying.reshape([-1, 1]), degree)
 
-model = linear(degree)  # 定义未正则化的线性模型
+model = Linear(degree)  # 定义未正则化的线性模型
 
 optimizer_lsm(model, X_train_transformed, y_train.reshape([-1, 1]))   # 训练未正则化的模型
 
 y_test_pred = model(X_test_transformed).squeeze()    # 采用未正则化的训练模型，在测试集上预测标签
 y_underlying_pred = model(X_underlying_transformed).squeeze()
 
-model_reg = linear(degree)  # 定义带正则项的线性模型
+model_reg = Linear(degree)  # 定义带正则项的线性模型
 
 optimizer_lsm(model_reg, X_train_transformed, y_train.reshape([-1, 1]), reg_lambda=reg_lambda)  # 训练带正则项的模型
 

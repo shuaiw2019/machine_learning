@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import paddle
-from Bridge.oprator import *
-from Bridge.dataset import *
+from nndl.oprator import *
+from nndl.dataset import *
 
 import math
 
@@ -39,7 +39,7 @@ y_underlying = sin(X_underlying)
 plt.rcParams['figure.figsize'] = (12.0, 8.0)
 
 for i, degree in enumerate([1, 3, 5, 8]):
-    model = linear(degree)
+    model = Linear(degree)
     X_train_transformed = polynomial_basic_function(X_train.reshape([-1, 1]), degree)
     X_underlying_transformed = polynomial_basic_function(X_underlying.reshape([-1, 1]), degree)
     # 训练模型得到参数
@@ -57,7 +57,7 @@ for i, degree in enumerate([1, 3, 5, 8]):
 #     plt.annotate('M={}'.format(degree), xy=(0.95, -1.4))
 #     plt.legend(loc='lower left', fontsize='large')
 #
-# plt.savefig('不同阶数多项式训练结果.jpg')
+# plt.savefig('T2.2-不同阶数多项式训练结果.jpg')
 # plt.show()
 
 
@@ -70,7 +70,7 @@ distribution_error =[]
 
 # 遍历多项式阶数
 for i in range(9):
-    model = linear(i)
+    model = Linear(i)
 
     X_train_transformed = polynomial_basic_function(X_train.reshape([-1, 1]), i)
     X_test_transformed = polynomial_basic_function(X_test.reshape([-1, 1]), i)

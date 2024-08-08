@@ -1,9 +1,8 @@
-import paddle
-from matplotlib import pyplot as plt
-from Bridge.dataset import *
-from Bridge.oprator import *
-from Bridge.bridger import *
-from Bridge.visul import *
+from cooker.dataset import *
+from cooker.oprator import *
+from cooker.optimizer import *
+from cooker.runner import *
+from nndl.visul import *
 
 paddle.seed(62)
 n_samples = 1000
@@ -40,14 +39,14 @@ loss_fn = MultiCrossEntroLoss()
 # 指定评价指标
 accuracy = accuracy
 # 实例化bridger类
-bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=accuracy)
+runner = Runner(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=accuracy)
 # 模型训练
-bridger.train([X_train, y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, eval_epochs=1, save_path='3.2_best.model')
+runner.train([X_train, y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, eval_epochs=1, save_path='3.2_best.model')
 # 可视化训练结果
-# plot_class(bridger, fig_name='T3.2-多分类训练结果.jpg')
+# plot_class(runner, fig_name='T3.2-多分类训练结果.jpg')
 
 # 模型评价
-score, loss = bridger.evaluate([X_test, y_test])
+score, loss = runner.evaluate([X_test, y_test])
 print('[test] score / loss:{:.4f}/{:.4f}'.format(score, loss))
 
 # 可视化分类边界
@@ -55,7 +54,7 @@ print('[test] score / loss:{:.4f}/{:.4f}'.format(score, loss))
 x1, x2 = paddle.meshgrid(paddle.linspace(-3.5, 2, 200), paddle.linspace(-4.5, 3.5, 200))
 x = paddle.stack([paddle.flatten(x1), paddle.flatten(x2)], axis=1)
 # 预测对应类别
-y = bridger.predict(x)
+y = runner.predict(x)
 y = paddle.argmax(y, axis=1)
 # 绘制类别区域
 plt.ylabel('x2')

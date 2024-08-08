@@ -1,9 +1,7 @@
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from Bridge.oprator import *
-from Bridge.dataset import *
-from Bridge.bridger import *
+from nndl.oprator import *
+from cooker.optimizer import *
+from cooker.runner import *
 import paddle
 
 # 导入波士顿房价数据集
@@ -120,19 +118,19 @@ test_dataset = (X_test, y_test)
 
 # 构建模型
 input_size = 12
-model = linear(input_size)
+model = Linear(input_size)
 
 import paddle.nn as nn
 mse_loss = nn.MSELoss()
 # 模型训练
-bridger = bridger(model=model, optimizer=optimizer_lsm, loss_fn=None, metric=mse_loss)   # 实例化
+runner = Runner(model=model, optimizer=optimizer_lsm, loss_fn=None, metric=mse_loss)   # 实例化
 # 模型保存文件夹
 saved_dir = './model'
-bridger.train(dataset=train_dataset, reg_lambda=0, model_dir=saved_dir)
+runner.train(dataset=train_dataset, reg_lambda=0, model_dir=saved_dir)
 
 columns_list = data.columns.to_list()
-weights = bridger.model.params['w'].tolist()
-b = bridger.model.params['b'].item()
+weights = runner.model.params['w'].tolist()
+b = runner.model.params['b'].item()
 
 for i in range(len(weights)):
     print(columns_list[i],"weight:",weights[i])
@@ -141,13 +139,13 @@ print("b:",b)
 
 
 # 加载模型权重
-bridger.load_model(saved_dir)
+runner.load_model(saved_dir)
 
-MSE = bridger.evaluate(test_dataset)
+MSE = runner.evaluate(test_dataset)
 print('MSE:', MSE.item())
 
 
-bridger.load_model(saved_dir)
-pred = bridger.predict(X_test[:1])
+runner.load_model(saved_dir)
+pred = runner.predict(X_test[:1])
 print("真实房价：",y_test[:1].item())
 print("预测的房价：",pred.item())

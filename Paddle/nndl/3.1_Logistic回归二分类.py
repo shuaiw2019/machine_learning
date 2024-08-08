@@ -1,9 +1,7 @@
-import paddle
-
-from Bridge.dataset import *
-from Bridge.oprator import *
-from Bridge.bridger import *
-from Bridge.visul import *
+from nndl.dataset import *
+from nndl.oprator import *
+from cooker.runner import *
+from cooker.optimizer import *
 import matplotlib.pyplot as plt
 
 
@@ -50,14 +48,14 @@ loss_fn = BinaryCrossEntropyLoss()
 # 指定评价方式
 metric = accuracy
 # 实例化bridger类，并传入训练配置
-bridger = Bridger(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
-bridger.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')
+runner = Runner(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
+runner.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')
 
 # 训练结果可视化
-# plot(bridger, fig_name='T3.1-二分类训练结果.jpg')
+# plot(runner, fig_name='T3.1-二分类训练结果.jpg')
 
 # 模型评价
-score, loss = bridger.evaluate([X_test, y_test])
+score, loss = runner.evaluate([X_test, y_test])
 print('[test] score/loss: {:.4f}/{:.4f}'.format(score, loss))
 
 
