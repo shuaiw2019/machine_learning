@@ -1,7 +1,8 @@
 from nndl.dataset import *
 from nndl.oprator import *
-from cooker.runner import *
-from cooker.optimizer import *
+from nndl.runner import *
+from nndl.optimizer import *
+from nndl.metric import *
 import matplotlib.pyplot as plt
 
 
@@ -49,7 +50,7 @@ loss_fn = BinaryCrossEntropyLoss()
 metric = accuracy
 # 实例化bridger类，并传入训练配置
 runner = Runner(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=metric)
-runner.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='best_model.pdparams')
+runner.train([X_train,y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, save_path='./model/3.1-best_model.pdparams')
 
 # 训练结果可视化
 # plot(runner, fig_name='T3.1-二分类训练结果.jpg')

@@ -1,9 +1,9 @@
 import paddle
 from matplotlib import pyplot as plt
 from nndl.dataset import *
-from nndl.cooker.metric import *
+from nndl.metric import *
 from nndl.oprator import *
-from nndl.cooker.optimizer import *
+from nndl.optimizer import *
 
 
 # 线性函数

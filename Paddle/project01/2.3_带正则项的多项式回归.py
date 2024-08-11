@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import paddle
 from nndl.oprator import *
 from nndl.dataset import *
-
+from nndl.optimizer import *
 import math
 
 

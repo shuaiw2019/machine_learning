@@ -1,7 +1,7 @@
 import pandas as pd
 from nndl.oprator import *
-from cooker.optimizer import *
-from cooker.runner import *
+from nndl.optimizer import *
+from nndl.runner import *
 import paddle
 
 # 导入波士顿房价数据集
@@ -30,8 +30,8 @@ def boxplot(data, fig_name):
         plt.boxplot(data[col_name],
                     showmeans=True,
                     meanprops={"markersize": 1, "marker": "D", "markeredgecolor": "#C54680"},  # 均值的属性
-                    medianprops={"color": "#946279"},  # 中位数线的属性
-                    whiskerprops={"color": "#8E004D", "linewidth": 0.4, 'linestyle': "--"},
+                    medianprops={"color": "#946279"},   # 中位数线的属性
+                    whiskerprops={"color": "#8E004D", "linewidth": 0.4, 'linestyle': "--"},    # 须样式
                     flierprops={"markersize": 0.4},
                     )
         # 图名

@@ -16,9 +16,16 @@ class Runner(object):
 
     # 模型训练
     def train(self, train_set, dev_set, **kwargs):
+        """
+        示例：Runner.train([X_train, y_train], [X_dev, y_dev], num_epochs=200, log_epochs=10, save_path='bm')
+        Args:
+            train_set: 训练集，[X_train, y_train]
+            dev_set: 交叉验证集，[X_dev, y_dev]
+            **kwargs: 训练轮数，打印频率，模型保存路径，梯度打印函数(默认为None)
+        """
         num_epochs = kwargs.get('num_epochs', 0)       # 传入训练回合数，如果没有则默认为0
         log_epochs = kwargs.get('log_epochs', 100)     # 传入log打印频率，如果没有则默认为100
-        save_path = kwargs.get('save_path', '../Bridge/best_model.pdparams')    # 传入模型保存路径
+        save_path = kwargs.get('save_path', './model/best_model')    # 传入模型保存路径
         print_grads = kwargs.get('print_grads', None)     # 传入梯度打印函数，如果没有则默认为None
         best_score = 0        # 记录全局最优指标
         # 进行训练
@@ -51,6 +58,15 @@ class Runner(object):
 
     # 模型评价
     def evaluate(self, dataset, **kwargs):
+        """
+        示例：Runner.evaluate([X_test, y_test])
+        Args:
+            dataset: 测试集,[X_test, y_test]
+            **kwargs:
+        Returns:
+            score: 评价指标的得分值
+            loss: 损失函数的损失值
+        """
         X, y = dataset
         logits = self.model(X)         # 计算模型输出
         loss = self.loss_fn(logits, y).item()

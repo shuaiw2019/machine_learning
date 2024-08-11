@@ -43,5 +43,14 @@ def softmax(X):
 if __name__ == '__main__':
     X = paddle.to_tensor([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]])
     predict = softmax(X)
-    print(predict)
+    print('softmax函数结果：', predict)
 
+
+# 符号函数
+def sign(X):
+    return paddle.sign(X)
+
+
+if __name__ == '__main__':
+    X =paddle.to_tensor([[2.0, -3.0, 3.0], [-3.0, 4.0, -4.0]])
+    print('符号函数结果：', sign(X))

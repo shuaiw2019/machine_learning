@@ -1,8 +1,9 @@
-from cooker.dataset import *
-from cooker.oprator import *
-from cooker.optimizer import *
-from cooker.runner import *
+from nndl.dataset import *
+from nndl.oprator import *
+from nndl.optimizer import *
+from nndl.runner import *
 from nndl.visul import *
+from nndl.metric import *
 
 paddle.seed(62)
 n_samples = 1000
@@ -41,7 +42,7 @@ accuracy = accuracy
 # 实例化bridger类
 runner = Runner(model=model, optimizer=optimizer, loss_fn=loss_fn, metric=accuracy)
 # 模型训练
-runner.train([X_train, y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, eval_epochs=1, save_path='3.2_best.model')
+runner.train([X_train, y_train], [X_dev, y_dev], num_epochs=500, log_epochs=50, eval_epochs=1, save_path='./model/3.2-best.model')
 # 可视化训练结果
 # plot_class(runner, fig_name='T3.2-多分类训练结果.jpg')
 

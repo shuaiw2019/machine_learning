@@ -4,6 +4,7 @@
 import paddle
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # 二分类数据集
@@ -190,3 +191,40 @@ if __name__ == '__main__':
     trans_X = polynomial_basic_function(X, degree=degree)
     print('转换前：\n', X)
     print('阶数为',degree,'转换后：\n',trans_X)
+
+
+# 数据清洗
+# 异常值分析
+# 箱线图
+def boxplot_2(features, size, title, figname):
+    """
+    用于无特征标题的数据
+    Args:
+        features: 数据特征，float
+    """
+    feature_names = title
+
+    # 连续画几个图片
+    plt.figure(figsize=size, dpi=200)
+    # 子图调整
+    plt.subplots_adjust(wspace=0.6)
+    # 每个特征画一个箱线图
+    for i in range(len(title)):
+        row = 2 if len(title) <= 10 else 3
+        col = (len(title) // row) if len(title) % 2 == 0 else ((len(title) + 1) // row)
+        plt.subplot(row, col, i+1)
+        # 画箱线图
+        plt.boxplot(features[:, i],
+                    showmeans=True,          # 显示均值
+                    whiskerprops={"color":"#E20079", "linewidth":0.4, 'linestyle':"--"},     # 须样式
+                    flierprops={"markersize":0.4},    # 异常值样式
+                    meanprops={"markersize":1})       # 均值的属性
+        # 子图名
+        plt.title(feature_names[i], fontdict={"size":5}, pad=2)
+        # y方向刻度
+        plt.yticks(fontsize=4, rotation=90)
+        plt.tick_params(pad=0.5)
+        # x方向刻度
+        plt.xticks([])
+    plt.savefig(figname)
+    plt.show()
