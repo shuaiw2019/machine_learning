@@ -2,6 +2,7 @@
 激活函数库
 """
 import paddle
+import matplotlib.pyplot as plt
 
 
 # logistic函数
@@ -9,20 +10,26 @@ def logistic(x):
     return 1 / (1 + paddle.exp(-x))
 
 
-# if __name__ == '__main__':
-#     x = paddle.linspace(-10, 10, 10000)
-#     plt.figure()         # 创建新图像
-#     plt.plot(x.tolist(), logistic(x).tolist(), color='r', label='logistic function')
-#     ax = plt.gca()       # 获取当前坐标轴对象
-#     ax.spines['top'].set_color('none')       # 取消上侧坐标轴
-#     ax.spines['right'].set_color('none')     # 取消右侧坐标轴
-#     ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
-#     ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
-#     ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
-#     ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
-#     plt.legend()    # 图例
-#     plt.savefig('T3.1-Logistic函数.jpg')     # 保存图片
-#     plt.show()      # 显示图像
+# tanh函数
+def tanh(x):
+    return (paddle.exp(x) - paddle.exp(-x)) / (paddle.exp(x) + paddle.exp(-x))
+
+
+if __name__ == '__main__':
+    x = paddle.linspace(-10, 10, 10000)
+    plt.figure()         # 创建新图像
+    plt.plot(x.tolist(), logistic(x).tolist(), color='r', label='logistic function')
+    plt.plot(x.tolist(), tanh(x).tolist(), color='g', linestyle='--', label='logistic function')
+    ax = plt.gca()       # 获取当前坐标轴对象
+    ax.spines['top'].set_color('none')       # 取消上侧坐标轴
+    ax.spines['right'].set_color('none')     # 取消右侧坐标轴
+    ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
+    ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
+    ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
+    ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
+    plt.legend(loc='lower right', fontsize='large')    # 图例
+    plt.savefig('F:/Paddle/machine_learning/Paddle/project01/figure/T4.1-Logistic和tanh函数.jpg')     # 保存图片
+    plt.show()      # 显示图像
 
 
 # 定义Softmax函数
