@@ -232,6 +232,41 @@ if __name__ == '__main__':
 
 
 # 感知器分类算子
+class Perceptron(Op):
+    def __init__(self, input_dim, output_dim):
+        super(Perceptron, self).__init__()
+        self.params = {}
+        self.params['w'] = paddle.zeros(shape=[input_dim, output_dim])
+        self.params['b'] = paddle.zeros(shape=[output_dim])
+        self.grads = {}
+        self.X = None
+        self.outputs = None
+        self.output_dim = output_dim
+
+    def __call__(self, inputs):
+        return self.forward(inputs)
+
+    def forward(self, inputs):
+        """
+        感知器计算
+        Args:
+            inputs: shape=[N,D],N是样本数量，D是特征维度
+        Returns:
+            outputs: 预测值，shape=[N,C],C是类别数
+        """
+        self.X = inputs
+        score = paddle.matmul(self.X, self.params['w']) + self.params['b']
+        self.outputs = activation.sign(score)
+        return self.outputs
+
+    def backward(self, labels):
+        """
+        梯度计算
+        Args:
+            labels: 样本真实标签，shape=[N,C]
+        """
+        N = labels.shape[0]
+        labels = paddle.nn.functional.one_hot(labels, self.output_dim)
 
 
 # 损失函数
