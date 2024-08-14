@@ -1,22 +1,40 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import paddle
 
-# 创建一些随机数据
-data = np.random.randn(100)
 
-# 创建箱形图
-plt.boxplot(data,
-            vert=True,  # 竖直方向绘制箱形图
-            patch_artist=True,  # 填充箱体
-            notch=False,  # 不使用凹口
-            showmeans=False,  # 不显示均值
-            meanline=False,  # 不使用线来表示均值
-            showfliers=True,  # 显示异常值
-            medianprops=dict(color="red"),  # 设置中位数线的颜色
-            whiskerprops=dict(color="green", linewidth=2),  # 设置须的颜色和宽度
-            capprops=dict(color="blue"),  # 设置端点的颜色
-            boxprops=dict(facecolor="lightblue"),  # 设置箱体的颜色
-            flierprops=dict(markerfacecolor="red", markersize=6))  # 设置异常值的颜色和大小
+def logistic(x):
+    return 1 / (1 + paddle.exp(-x))
 
-# 显示图形
-plt.show()
+
+def swish(x, beta=1):
+    return x * logistic(beta * x)
+
+
+def plt_fn(*functions_with_args):
+    x = paddle.linspace(-10, 10, 10000)
+    plt.figure()  # 创建新图像
+    for i, (func, args) in enumerate(functions_with_args):
+        # 使用不同的颜色和线型
+        color = f"C{i}"  # Matplotlib默认颜色循环
+        linestyle = '-' if i % 2 == 0 else '--'  # 偶数索引使用实线，奇数索引使用虚线
+        y = func(x, *args)  # 传入参数
+        plt.plot(x.tolist(), y.tolist(), color=color, linestyle=linestyle, label=f'{func.__name__}({args})')
+
+    ax = plt.gca()  # 获取当前坐标轴对象
+    ax.spines['top'].set_color('none')  # 取消上侧坐标轴
+    ax.spines['right'].set_color('none')  # 取消右侧坐标轴
+    ax.xaxis.set_ticks_position('bottom')  # 设置默认的x坐标轴
+    ax.yaxis.set_ticks_position('left')  # 设置默认的y坐标轴
+    ax.spines['left'].set_position(('data', 0))  # 设置y轴起点为0
+    ax.spines['bottom'].set_position(('data', 0))  # 设置x轴起点为0
+
+    plt.legend(loc=0, fontsize='medium')  # 图例
+    plt.savefig(f'T4.1-{"、".join(func.__name__ for func, _ in functions_with_args)}函数.jpg')  # 保存图片
+    plt.show()  # 显示图像
+
+
+if __name__ == '__main__':
+    betas = [0, 0.5, 1, 100]
+    functions_with_args = [(swish, (beta,)) for beta in betas]  # 列表推导式
+    plt_fn(*functions_with_args)

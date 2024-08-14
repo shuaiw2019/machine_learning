@@ -91,36 +91,39 @@ class Exponential(Op):
 
 # 向量线性乘法算子
 class Linear(Op):
-    def __init__(self, input_size):
+    def __init__(self, input_size, output_size, name, weight_init=paddle.standard_normal,bias_init=paddle.zeros):
         """
-        构造广义线性函数，生成模型参数
-        :param input_size: 模型要处理的数据特征向量长度
+           构造广义线性函数，初始化模型参数
+        Args:
+            input_size: 模型要处理的数据特征向量长度，或神经元数量
+            output_size: 输出数据维度，或输出神经元数量
+            name: 算子名称
+            weight_init: 权重初始化
+            bias_init: 偏置初始化
         """
         super().__init__()
-        self.input_size = input_size
         # 模型参数
         self.params = {}
-        self.params['w'] = paddle.randn(shape=[self.input_size, 1], dtype='float32')
-        self.params['b'] = paddle.zeros(shape=[1], dtype='float32')
+        self.params['w'] = weight_init(shape=[input_size, output_size])
+        self.params['b'] = bias_init(shape=[1, output_size])
+        self.inputs = None
+        self.name = None
 
-    def __call__(self, X):
-        return self.forward(X)
+    def __call__(self, inputs):
+        return self.forward(inputs)
 
-    def forward(self, X):
+    def forward(self, inputs):
         """
-        前向计算数据的预测值
-        :param X: 张量，shape=[N,D]
-        :return:  y_pred:张量，shape=[N]
+        param:
+          inputs: 输入，shape=[N,input_size]，N是样本数量
+        return:
+          outputs: 输出，shape=[N,output_size]
         """
-        N, D = X.shape
-        if self.input_size == 0:
-            return paddle.full(shape=[N,1], fill_value=self.params['b'])
-        # 输入数据维度合法性验证
-        assert D == self.input_size
+        self.inputs = inputs
         # 使用paddle.matmul计算两个tensor的乘积
-        y_pred = paddle.matmul(X, self.params['w']) + self.params['b']
+        outputs = paddle.matmul(inputs, self.params['w']) + self.params['b']
 
-        return y_pred
+        return outputs
 
 
 if __name__ == '__main__':
@@ -129,7 +132,7 @@ if __name__ == '__main__':
     input_size = 3
     N = 2
     X = paddle.randn(shape=[N, input_size],dtype='float32')
-    model = Linear(input_size)
+    model = Linear(input_size=input_size, output_size=1, name=None)
     y_pred = model(X)
     print(X)
     print('y_pred:', y_pred,'\ny_pred type:', type(y_pred),'\ny_pred shape:',y_pred.shape)

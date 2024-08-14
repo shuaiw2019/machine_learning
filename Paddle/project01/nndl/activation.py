@@ -6,11 +6,15 @@ import matplotlib.pyplot as plt
 
 
 # 显示图像
-def plt_fn(fig1, fig2):
+def plt_fn(*functions_with_args):
     x = paddle.linspace(-10, 10, 10000)
-    plt.figure()         # 创建新图像
-    plt.plot(x.tolist(), fig1(x).tolist(), color='#40E0D0', label=f'{fig1.__name__} function')
-    plt.plot(x.tolist(), fig2(x).tolist(), color='#4169E1', linestyle='--', label=f'{fig2.__name__} function')
+    plt.figure()  # 创建新图像
+    for i, (func, args) in enumerate(functions_with_args):
+        # 使用不同的颜色和线型
+        color = f"C{i}"  # Matplotlib默认颜色循环
+        linestyle = '-' if i % 2 == 0 else '--'  # 偶数索引使用实线，奇数索引使用虚线
+        y = func(x, *args)   # 传入参数
+        plt.plot(x.tolist(), y.tolist(), color=color, linestyle=linestyle, label=f'{func.__name__} function')
     ax = plt.gca()       # 获取当前坐标轴对象
     ax.spines['top'].set_color('none')       # 取消上侧坐标轴
     ax.spines['right'].set_color('none')     # 取消右侧坐标轴
@@ -18,8 +22,8 @@ def plt_fn(fig1, fig2):
     ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
     ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
     ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
-    plt.legend(loc='lower right', fontsize='medium')    # 图例
-    plt.savefig(f'T4.1-{fig1.__name__}和{fig2.__name__}函数.jpg')     # 保存图片
+    plt.legend(loc=0, fontsize='medium')    # 图例
+    plt.savefig(f'T4.1-{"、".join(func.__name__ for func, _ in functions_with_args)}函数.jpg')     # 保存图片
     plt.show()      # 显示图像
 
 
@@ -34,23 +38,6 @@ def tanh(x):
     return (paddle.exp(x) - paddle.exp(-x)) / (paddle.exp(x) + paddle.exp(-x))
 
 
-# if __name__ == '__main__':
-#     x = paddle.linspace(-10, 10, 10000)
-#     plt.figure()         # 创建新图像
-#     plt.plot(x.tolist(), logistic(x).tolist(), color='#40E0D0', label='logistic function')
-#     plt.plot(x.tolist(), tanh(x).tolist(), color='#4169E1', linestyle='--', label='tanh function')
-#     ax = plt.gca()       # 获取当前坐标轴对象
-#     ax.spines['top'].set_color('none')       # 取消上侧坐标轴
-#     ax.spines['right'].set_color('none')     # 取消右侧坐标轴
-#     ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
-#     ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
-#     ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
-#     ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
-#     plt.legend(loc='lower right', fontsize='large')    # 图例
-#     plt.savefig('T4.1-Logistic和tanh函数.jpg')     # 保存图片
-#     plt.show()      # 显示图像
-
-
 # -Hard_Logistic函数
 def hard_logistic(x):
     return paddle.maximum(paddle.minimum((paddle.to_tensor(0.25 * x + 0.5)),
@@ -62,8 +49,11 @@ def hard_tanh(x):
     return paddle.maximum(paddle.minimum(x, paddle.to_tensor(1.)), paddle.to_tensor(-1.))
 
 
-if __name__ == '__main__':
-    plt_fn(hard_logistic, logistic)
+# if __name__ == '__main__':
+#     func1 = [(hard_logistic, ()), (logistic, ())]
+#     func2 = [(hard_tanh, ()), (tanh, ())]
+#     plt_fn(*func1)
+#     plt_fn(*func2)
 
 
 # 斜坡型函数
@@ -79,30 +69,30 @@ def leaky_relu(x, negative_slope=0.1):
     return a1 + a2
 
 
-# if __name__ == '__main__':
-#     x = paddle.linspace(-10, 10, 10000)
-#     plt.figure()         # 创建新图像
-#     plt.plot(x.tolist(), relu(x).tolist(), color='r', label='ReLU function')
-#     plt.plot(x.tolist(), leaky_relu(x).tolist(), color='r', linestyle='--', label='Leaky_ReLU function')
-#     ax = plt.gca()       # 获取当前坐标轴对象
-#     ax.spines['top'].set_color('none')       # 取消上侧坐标轴
-#     ax.spines['right'].set_color('none')     # 取消右侧坐标轴
-#     ax.xaxis.set_ticks_position('bottom')    # 设置默认的x坐标轴
-#     ax.yaxis.set_ticks_position('left')      # 设置默认的y坐标轴
-#     ax.spines['left'].set_position(('data', 0))     # 设置y轴起点为0
-#     ax.spines['bottom'].set_position(('data', 0))   # 设置x轴起点为0
-#     plt.legend(loc='upper left', fontsize='medium')    # 图例
-#     plt.savefig('T4.1-ReLU和Leaky_ReLU函数.jpg')     # 保存图片
-#     plt.show()      # 显示图像
-
-
 # -ELU函数
+def elu(x, gamma=1):
+    return relu(x) + paddle.minimum(gamma * (paddle.exp(x) - paddle.to_tensor(1.)), paddle.to_tensor(0.))
 
 
 # -Softplus函数
+def softplus(x):
+    return paddle.log(paddle.to_tensor(1.) + paddle.exp(x))
+
+
+# if __name__ == '__main__':
+#     func = [(relu, ()), (leaky_relu, ()), (elu, ()), (softplus, ())]
+#     plt_fn(*func)
 
 
 # -Swish函数
+def swish(x, beta=1):
+    return x * logistic(beta * x)
+
+
+# if __name__ == '__main__':
+#     betas = [0, 0.5, 1, 100]
+#     functions_with_args = [(swish, (beta,)) for beta in betas]  # 列表推导式
+#     plt_fn(*functions_with_args)
 
 
 # 定义Softmax函数
